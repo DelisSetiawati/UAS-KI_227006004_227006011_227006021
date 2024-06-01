@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watermarking with Method Phase Congruency</title>
+    <script src="https://docs.opencv.org/3.4.0/opencv.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 20px;
+            background: linear-gradient(to right, #fd746c, #ff9068);
+            color: #fff;
+            padding-top: 50px;
+        }
+        h1 {
+            color: #fff;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        canvas {
+            border: 2px solid #fff;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+        }
+        input[type="file"] {
+            padding: 10px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        input[type="file"]:hover {
+            background: linear-gradient(to right, #43e97b, #38f9d7);
+        }
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(to right, #1fa2ff, #12d8fa);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: linear-gradient(to right, #0575e6, #00f260);
+        }
+        #loading {
+            display: none;
+            margin-top: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Watermarking with Method Phase Congruency</h1>
+    <div class="container">
+        <input type="file" id="originalImageInput" accept="image/*">
+        <input type="file" id="watermarkImageInput" accept="image/*">
+        <button onclick="applyWatermark()">Apply Watermark</button>
+        <div id="loading">Processing images...</div>
+        <canvas id="canvas"></canvas>
+    </div>
+    <script>
+        let originalImage, watermarkImage;
+
+        document.getElementById('originalImageInput').addEventListener('change', function(event) {
+            document.getElementById('loading').style.display = 'block';
+            loadImage(event.target.files[0], (img) => {
+                originalImage = img;
+                drawImage(originalImage, 'canvas');
+                document.getElementById('loading').style.display = 'none';
+            });
+        });
+
+        document.getElementById('watermarkImageInput').addEventListener('change', function(event) {
+            document.getElementById('loading').style.display = 'block';
+            loadImage(event.target.files[0], (img) => {
+                watermarkImage = img;
+                document.getElementById('loading').style.display = 'none';
+            });
+        });
+
+        function loadImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    callback(img);
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function drawImage(image, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+        }
+
+        function applyWatermark() {
+            if (!originalImage || !watermarkImage) {
+                alert('Please select both original and watermark images.');
+                return;
+            }
+
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const alpha = 0.1; // transparency of watermark
+
+            // Draw the original image
+            ctx.drawImage(originalImage, 0, 0);
+
+            // Draw the watermark
+            const wmWidth = originalImage.width;
+            const wmHeight = originalImage.height;
+            ctx.globalAlpha = alpha;
+            ctx.drawImage(watermarkImage, 0, 0, wmWidth, wmHeight);
+            ctx.globalAlpha = 1.0;
+        }
+    </script>
+</body>
+</html>
